@@ -1,28 +1,7 @@
 import { Meteor } from "meteor/meteor";
-import { Mongo } from "meteor/mongo";
 import React from "react";
 import ReactDOM from "react-dom";
-import { useTracker } from 'meteor/react-meteor-data';
-
-const PythonData = new Mongo.Collection("pythonData");
-
-const ProgressChart = () => {
-  const pythonData = useTracker(() => {
-    Meteor.subscribe('pythonData');
-    return PythonData.findOne();
-  }, []);
-
-  return (
-    <div>
-      <h3>Python Data:</h3>
-      {pythonData ? (
-        <pre>{JSON.stringify(pythonData.data, null, 2)}</pre>
-      ) : (
-        <p>No data yet</p>
-      )}
-    </div>
-  );
-};
+import ProgressChart from "../imports/ui/ProgressChart"; // Import the ProgressChart component
 
 const App = () => {
   return (

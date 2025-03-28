@@ -36,7 +36,16 @@ Meteor.startup(() => {
         console.log(`Data from ${scriptPath} inserted into MongoDB`);
       } catch (parseError) {
         // Handle non-JSON messages (e.g., progress updates or plain text)
-        console.warn(`Non-JSON output from ${scriptPath}:`, message);
+        if (message.startsWith('Progress:')) {
+          const progress = parseInt(message.replace('Progress:', '').trim(), 10);
+          console.log(`Parsed progress from ${scriptPath}:`, progress);
+
+          // Insert progress data into MongoDB
+          await PythonData.insertAsync({ progress, scriptPath, createdAt: new Date() });
+          console.log(`Progress data from ${scriptPath} inserted into MongoDB`);
+        } else {
+          console.warn(`Non-JSON output from ${scriptPath}:`, message);
+        }
       }
     });
 

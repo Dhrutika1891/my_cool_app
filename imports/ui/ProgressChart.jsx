@@ -6,21 +6,23 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'r
 const PythonData = new Mongo.Collection('pythonData');
 
 const ProgressChart = () => {
-  const pythonData = useTracker(() => {
+  const progressData = useTracker(() => {
     Meteor.subscribe('pythonData');
-    return PythonData.findOne();
+    const data = PythonData.findOne();
+    console.log('Fetched progressData:', data); // Debugging
+    return data;
   }, []);
 
-  // Transform the data into a format suitable for the chart
+  // Transform the x and y arrays into a format suitable for the chart
   const chartData =
-    pythonData?.x?.map((xValue, index) => ({
-      x: xValue,
-      y: pythonData.y[index],
+    progressData?.data?.x?.map((xValue, index) => ({
+      name: `Step ${xValue}`,
+      progress: progressData.data.y[index],
     })) || [];
 
   return (
     <div>
-      <h3>Python Data Chart:</h3>
+      <h3>Progress Chart</h3>
       {chartData.length > 0 ? (
         <LineChart
           width={600}
@@ -29,14 +31,14 @@ const ProgressChart = () => {
           margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
         >
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="x" label={{ value: 'X-Axis', position: 'insideBottom', offset: -5 }} />
-          <YAxis label={{ value: 'Y-Axis', angle: -90, position: 'insideLeft' }} />
+          <XAxis dataKey="name" label={{ value: 'Steps', position: 'insideBottom', offset: -5 }} />
+          <YAxis label={{ value: 'Progress (%)', angle: -90, position: 'insideLeft' }} />
           <Tooltip />
           <Legend />
-          <Line type="monotone" dataKey="y" stroke="#8884d8" activeDot={{ r: 8 }} />
+          <Line type="monotone" dataKey="progress" stroke="#8884d8" activeDot={{ r: 8 }} />
         </LineChart>
       ) : (
-        <p>No data yet</p>
+        <p>No progress data available</p>
       )}
     </div>
   );
