@@ -10,26 +10,19 @@ Meteor.startup(() => {
   ];
 
   scripts.forEach((scriptPath) => {
-    console.log(`Running Python script: ${scriptPath}`);
-
     const pythonShell = new PythonShell(scriptPath, {
       pythonPath: 'python3',
     });
 
     pythonShell.on('message', async (message) => {
-      console.log(`Python script result from ${scriptPath}:`, message);
+      console.log(`Python script result`, message);
 
       if (message.startsWith('Progress:')) {
         const progress = parseInt(message.replace('Progress:', '').replace('%', '').trim(), 10);
-        console.log(`Parsed progress from ${scriptPath}:`, progress);
-
         await PythonData.insertAsync({ progress, scriptPath, createdAt: new Date() });
-        console.log(`Progress data from ${scriptPath} inserted into MongoDB`);
       } else {
         try {
           const data = JSON.parse(message);
-          console.log(`Parsed data from ${scriptPath}:`, data);
-
           await PythonData.insertAsync({ data, scriptPath, createdAt: new Date() });
           console.log(`Data from ${scriptPath} inserted into MongoDB`);
         } catch (parseError) {
@@ -42,7 +35,7 @@ Meteor.startup(() => {
       if (err) {
         console.error(`Error running Python script ${scriptPath}:`, err);
       } else {
-        console.log(`Python script ${scriptPath} finished successfully.`);
+        console.log(`Progress data from ${scriptPath} inserted into MongoDB`);
       }
     });
   });
