@@ -9,11 +9,13 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.20.7",
+    "apexcharts": "^4.5.0",
     "meteor-node-stubs": "^1.2.5",
     "python-shell": "^5.0.0",
     "react": "^18.2.0",
     "react-apexcharts": "^1.7.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "recharts": "^2.15.1"
   },
   "meteor": {
     "mainModule": {
