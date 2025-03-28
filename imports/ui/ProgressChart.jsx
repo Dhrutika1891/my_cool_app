@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTracker } from 'meteor/react-meteor-data';
 import { Mongo } from 'meteor/mongo';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
@@ -6,6 +6,8 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 const PythonData = new Mongo.Collection('pythonData');
 
 const ProgressChart = () => {
+  const [progressInput, setProgressInput] = useState(''); // State for manual progress input
+
   // Subscribe to the pythonData collection and fetch progress updates
   const progressData = useTracker(() => {
     Meteor.subscribe('pythonData');
@@ -18,11 +20,58 @@ const ProgressChart = () => {
     progress: entry.progress,
   }));
 
+  // Handle form submission to add progress data
+  const handleAddProgress = (e) => {
+    e.preventDefault();
+    const progressValue = parseInt(progressInput, 10);
+
+    if (!isNaN(progressValue) && progressValue >= 0 && progressValue <= 100) {
+      // Insert progress data into the database
+      Meteor.call('addProgressData', progressValue, (err) => {
+        if (err) {
+          console.error('Error adding progress data:', err);
+        } else {
+          console.log(`Progress: ${progressValue}% added to the database.`);
+        }
+      });
+      setProgressInput(''); // Clear the input field
+    } else {
+      alert('Please enter a valid progress value between 0 and 100.');
+    }
+  };
+
   return (
     <div style={{ padding: '20px', backgroundColor: '#f9f9f9', borderRadius: '10px' }}>
       <h3 style={{ textAlign: 'center', color: '#4a90e2' }}>Real-Time Progress Area Chart</h3>
+
+      {/* Form to manually add progress data */}
+      <form onSubmit={handleAddProgress} style={{ marginBottom: '20px', textAlign: 'center' }}>
+        <input
+          type="number"
+          value={progressInput}
+          onChange={(e) => setProgressInput(e.target.value)}
+          placeholder="Enter progress (0-100)"
+          style={{ padding: '10px', fontSize: '16px', borderRadius: '5px', border: '1px solid #ccc' }}
+        />
+        <button
+          type="submit"
+          style={{
+            marginLeft: '10px',
+            padding: '10px 20px',
+            fontSize: '16px',
+            borderRadius: '5px',
+            backgroundColor: '#4a90e2',
+            color: '#fff',
+            border: 'none',
+            cursor: 'pointer',
+          }}
+        >
+          Add Progress
+        </button>
+      </form>
+
       {chartData.length > 0 ? (
-        <div style={{ width: '100%', height: '500px' }}> {/* Full width and increased height */}
+        <div style={{ width: '100%', height: '500px' }}>
           <ResponsiveContainer>
             <AreaChart
               data={chartData}
@@ -49,7 +98,7 @@ const ProgressChart = () => {
                 stroke="#4a90e2"
                 fill="url(#colorGradient)"
                 strokeWidth={3}
-                animationDuration={500} // Smooth animation for dynamic updates
+                animationDuration={500}
               />
               <defs>
                 <linearGradient id="colorGradient" x1="0" y1="0" x2="0" y2="1">
