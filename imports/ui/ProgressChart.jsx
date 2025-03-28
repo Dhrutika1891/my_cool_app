@@ -6,23 +6,21 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'r
 const PythonData = new Mongo.Collection('pythonData');
 
 const ProgressChart = () => {
+  // Subscribe to the pythonData collection and fetch progress updates
   const progressData = useTracker(() => {
     Meteor.subscribe('pythonData');
-    const data = PythonData.findOne();
-    console.log('Fetched progressData:', data); // Debugging
-    return data;
+    return PythonData.find({ progress: { $exists: true } }, { sort: { createdAt: 1 } }).fetch();
   }, []);
 
-  // Transform the x and y arrays into a format suitable for the chart
-  const chartData =
-    progressData?.data?.x?.map((xValue, index) => ({
-      name: `Step ${xValue}`,
-      progress: progressData.data.y[index],
-    })) || [];
+  // Transform the progress data into a format suitable for the chart
+  const chartData = progressData.map((entry, index) => ({
+    name: `Step ${index + 1}`,
+    progress: entry.progress,
+  }));
 
   return (
     <div>
-      <h3>Progress Chart</h3>
+      <h3>Real-Time Progress Chart</h3>
       {chartData.length > 0 ? (
         <LineChart
           width={600}

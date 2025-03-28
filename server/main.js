@@ -6,7 +6,6 @@ const PythonData = new Mongo.Collection('pythonData');
 
 Meteor.startup(() => {
   const scripts = [
-    '/home/dhruti.savaliya/my_cool_app/server/Script/mock_plots.py',
     '/home/dhruti.savaliya/my_cool_app/server/Script/mock_file.py',
   ];
 
@@ -17,39 +16,28 @@ Meteor.startup(() => {
       pythonPath: 'python3',
     });
 
-    // Handle progress updates from stderr
-    pythonShell.on('stderr', (stderr) => {
-      console.log(`Progress update from ${scriptPath}:`, stderr);
-    });
-
-    // Handle final output from stdout
     pythonShell.on('message', async (message) => {
       console.log(`Python script result from ${scriptPath}:`, message);
 
-      // Check if the message is valid JSON
-      try {
-        const data = JSON.parse(message);
-        console.log(`Parsed data from ${scriptPath}:`, data);
+      if (message.startsWith('Progress:')) {
+        const progress = parseInt(message.replace('Progress:', '').replace('%', '').trim(), 10);
+        console.log(`Parsed progress from ${scriptPath}:`, progress);
 
-        // Insert parsed data into MongoDB
-        await PythonData.insertAsync({ data, scriptPath, createdAt: new Date() });
-        console.log(`Data from ${scriptPath} inserted into MongoDB`);
-      } catch (parseError) {
-        // Handle non-JSON messages (e.g., progress updates or plain text)
-        if (message.startsWith('Progress:')) {
-          const progress = parseInt(message.replace('Progress:', '').trim(), 10);
-          console.log(`Parsed progress from ${scriptPath}:`, progress);
+        await PythonData.insertAsync({ progress, scriptPath, createdAt: new Date() });
+        console.log(`Progress data from ${scriptPath} inserted into MongoDB`);
+      } else {
+        try {
+          const data = JSON.parse(message);
+          console.log(`Parsed data from ${scriptPath}:`, data);
 
-          // Insert progress data into MongoDB
-          await PythonData.insertAsync({ progress, scriptPath, createdAt: new Date() });
-          console.log(`Progress data from ${scriptPath} inserted into MongoDB`);
-        } else {
+          await PythonData.insertAsync({ data, scriptPath, createdAt: new Date() });
+          console.log(`Data from ${scriptPath} inserted into MongoDB`);
+        } catch (parseError) {
           console.warn(`Non-JSON output from ${scriptPath}:`, message);
         }
       }
     });
 
-    // Handle script completion
     pythonShell.end((err) => {
       if (err) {
         console.error(`Error running Python script ${scriptPath}:`, err);
@@ -58,8 +46,8 @@ Meteor.startup(() => {
       }
     });
   });
+  
 
-  // Publish the Python data
   Meteor.publish('pythonData', function () {
     return PythonData.find();
   });

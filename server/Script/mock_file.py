@@ -1,21 +1,18 @@
 import time
 import sys
-import random
 
 
-def show_progress(duration=10, interval=0.5):
-    plots = {"x": [], "y": []}
-    steps = int(duration / interval)
-    for i in range(steps + 1):
-        progress = int((i / steps) * 100)
-        print(f"Progress:{progress}%")
-        plots["x"].append(i)
-        plots["y"].append(random.random())
-        # If you want the printing to be in place
-        # sys.stdout.write(f"\rProgress:{progress}%")
-        # sys.stdout.flush()
-        time.sleep(interval)
-    print('Success:{fileLocation:"/scans/myawesomescan.laz"}')
+def show_progress():
+    # Simulate a process with incremental progress updates
+    for i in range(0, 101, 5):  # Progress from 0% to 100% in steps of 5%
+        print(f"Progress:{i}%")  # Output progress to stdout
+        sys.stdout.flush()  # Ensure the output is sent immediately
+        time.sleep(1)  # Wait for 1 second to simulate a slow process
+
+    # Final output (optional)
+    print('{"status": "completed", "message": "Process finished successfully"}')
+    sys.stdout.flush()
+
 
 if __name__ == "__main__":
     show_progress()
